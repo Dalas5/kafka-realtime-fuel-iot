@@ -39,4 +39,4 @@ build/
 
 ## Custom added ##
 .idea
-*.csv
+!**/src/main/resources/*.csv

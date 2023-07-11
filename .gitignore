@@ -40,3 +40,5 @@ build/
 ## Custom added ##
 .idea
 !**/src/main/resources/*.csv
+/producer/src/main/resources/transacciones_surtidor.csv
+/producer/src/main/resources/transacciones_surtidor_short.csv

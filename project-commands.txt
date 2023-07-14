@@ -33,6 +33,8 @@ root
  |-- industria: string (nullable = true)		--> industry_name	type: string
  
  
+ /home/dalas/kafka_2.13-2.7.1
+ 
 unique_id_transa,id_transaccion,id_vehiculo,id_usuario,id_equipo,veh_site_id,pump_site_id,tank_site_id,user_site_id,producto,id_bomba,id_tanque,departamento,cantidad,codigo_error,timestamp,timestamp_stop,nombre_prod,veh_efficiency,volumen_inicial,volumen_final,temp_inicial,temp_final,volumen_comp_15_inicial,volumen_comp_15_final,cantidad_comp_15,codigo_producto,geo_latitud,geo_longitud,id_empresa,id_industria,industria
 
 uniq_id_trns,id_trns,id_veh,id_usr,id_eq,veh_site_id,pump_site_id,tank_site_id,user_site_id,prod_id,pump_id,tank_id,department_id,qty,err_cd,ts_start,ts_stop,prod_name,veh_eff,init_vol,final_vol,init_temp,final_temp,vol_comp_15_initial,vol_comp_15_final,qty_comp_15,prod_cd,geo_lat,geo_long,comp_id,industry_id,industry_name
@@ -47,7 +49,11 @@ server_cons = "broker1:9092,broker2:9093,broker3:9094"
 
 
 ********** Copy jar application to spark-cluster shared storage ***************************************
-cp /home/dalas/Documents/fuel-iot-scratch/iot-fuel-project/scala-postgres-test/target/scala-2.12/spark-streaming-data-pipeline-1.0.0-scala2.12.jar /home/dalas/Documents/fuel-iot-scratch/iot-fuel-project/apps/spark-streaming-data-pipeline-1.0.0-scala2.12.jar
+cp /home/dalas/Documents/kafka-realtime-fuel-iot/kafka-realtime-fuel-iot/spark-streaming/target/spark-streaming-1.0-SNAPSHOT-jar-with-dependencies.jar /home/dalas/Documents/kafka-realtime-fuel-iot/kafka-realtime-fuel-iot/apps/spark-streaming-1.0-SNAPSHOT-jar-with-dependencies.jar
+
+
+
+cp /home/dalas/Documents/kafka-realtime-fuel-iot/kafka-realtime-fuel-iot/spark-streaming/target/spark-streaming-1.0-SNAPSHOT.jar /home/dalas/Documents/kafka-realtime-fuel-iot/kafka-realtime-fuel-iot/apps/spark-streaming-1.0-SNAPSHOT.jar
 
 
 
@@ -88,20 +94,17 @@ CREATE TABLE IF NOT EXISTS dashboard_event_transacs_detail_agg_tbl (
 
 
 
+************* Run kafka producer *****************************************
+> java -cp producer/target/producer-1.0-SNAPSHOT-jar-with-dependencies.jar com.dalas.producer.GasStationsIotProducer
 
 
 
-
---- just and old example
-/opt/spark/bin/spark-submit --master spark://spark-master:7077 \
---jars /opt/spark-apps/postgresql-42.2.22.jar \
---driver-memory 1G \
---executor-memory 1G \
-/opt/spark-apps/main.py
 
 
 
 ************* Executing app in spark-master in client mode  *************************
+
+--- Log into spark master
 docker exec -it spark-master bash
 
 
@@ -109,15 +112,21 @@ docker exec -it spark-master bash
 /opt/spark/bin/spark-submit --class com.dalas.postgreTest --deploy-mode client --master spark://spark-master:7077 \
 /opt/spark-apps/spark-streaming-data-pipeline-1.0.0-scala2.12.jar
 
--- spark streaming test
+
 /opt/spark/bin/spark-submit --class com.dalas.sparkStreaming --deploy-mode client --master spark://spark-master:7077 \
-/opt/spark-apps/spark-streaming-data-pipeline-1.0.0-scala2.12.jar
-
->> Name de spark scala app as: sparkStreamingDataPipeline
+/opt/spark-apps/spark-streaming-1.0-SNAPSHOT.jar
 
 
-"broker1:9092,broker2:9093,broker3:9094"
+
+
+
+>> Name de spark scala app as: sparkStreaming
+
+
+"broker1:29092,broker2:29093,broker3:29094"
 "172.18.0.4:9092,broker2:9093,broker3:9094"
+"localhost:9092,localhost:9093,localhost:9094"
+
 
 
 ***** Delete topic and then create it
@@ -129,9 +138,6 @@ $KAFKA_HOME/bin/kafka-topics.sh --create --bootstrap-server localhost:9094 --top
 
 
 
-
-
-http://
 
 
 

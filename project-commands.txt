@@ -1,0 +1,139 @@
+root
+ |-- unique_id_transa: long (nullable = true)   --> uniq_id_trns  		type: long
+ |-- id_transaccion: integer (nullable = true)	--> id_trns			type: int
+ |-- id_vehiculo: integer (nullable = true)     --> id_veh			type: int
+ |-- id_usuario: integer (nullable = true)	--> id_usr			type: int
+ |-- id_equipo: integer (nullable = true)	--> id_eq			type: int
+ |-- veh_site_id: string (nullable = true)	--> veh_site_id			type: string
+ |-- pump_site_id: integer (nullable = true)	--> pump_site_id		type: int
+ |-- tank_site_id: integer (nullable = true)	--> tank_site_id		type: int
+ |-- user_site_id: string (nullable = true)	--> user_site_id		type: string
+ |-- producto: double (nullable = true)		--> prod_id			type: double
+ |-- id_bomba: integer (nullable = true)	--> pump_id			type: int
+ |-- id_tanque: integer (nullable = true)	--> tank_id			type: int
+ |-- departamento: string (nullable = true)	--> department_id		type: string
+ |-- cantidad: double (nullable = true)		--> qty				type: double
+ |-- codigo_error: string (nullable = true)	--> err_cd			type: string
+ |-- timestamp: timestamp (nullable = true)	--> ts_start			type: long
+ |-- timestamp_stop: timestamp (nullable = true)--> ts_stop			type: long
+ |-- nombre_prod: string (nullable = true)	--> prod_name			type: string
+ |-- veh_efficiency: double (nullable = true)	--> veh_eff			type: double
+ |-- volumen_inicial: double (nullable = true)	--> init_vol			type: double
+ |-- volumen_final: double (nullable = true)	--> final_vol			type: double
+ |-- temp_inicial: double (nullable = true)	--> init_temp			type: double
+ |-- temp_final: double (nullable = true)	--> final_temp			type: double
+ |-- volumen_comp_15_inicial: double (nullable = true) --> vol_comp_15_initial	type: double
+ |-- volumen_comp_15_final: double (nullable = true)	--> vol_comp_15_final	type: double
+ |-- cantidad_comp_15: double (nullable = true)		--> qty_comp_15		type: double
+ |-- codigo_producto: string (nullable = true)		--> prod_cd		type: string
+ |-- geo_latitud: double (nullable = true)		--> geo_lat		type: double
+ |-- geo_longitud: double (nullable = true)		--> geo_long		type: double
+ |-- id_empresa: integer (nullable = true)		--> comp_id		type: int
+ |-- id_industria: double (nullable = true)		--> industry_id		type: double
+ |-- industria: string (nullable = true)		--> industry_name	type: string
+ 
+ 
+unique_id_transa,id_transaccion,id_vehiculo,id_usuario,id_equipo,veh_site_id,pump_site_id,tank_site_id,user_site_id,producto,id_bomba,id_tanque,departamento,cantidad,codigo_error,timestamp,timestamp_stop,nombre_prod,veh_efficiency,volumen_inicial,volumen_final,temp_inicial,temp_final,volumen_comp_15_inicial,volumen_comp_15_final,cantidad_comp_15,codigo_producto,geo_latitud,geo_longitud,id_empresa,id_industria,industria
+
+uniq_id_trns,id_trns,id_veh,id_usr,id_eq,veh_site_id,pump_site_id,tank_site_id,user_site_id,prod_id,pump_id,tank_id,department_id,qty,err_cd,ts_start,ts_stop,prod_name,veh_eff,init_vol,final_vol,init_temp,final_temp,vol_comp_15_initial,vol_comp_15_final,qty_comp_15,prod_cd,geo_lat,geo_long,comp_id,industry_id,industry_name
+
+
+
+server_cons = "broker1:9092,broker2:9093,broker3:9094"
+
+
+2022-01-01 03:49:21
+
+
+
+********** Copy jar application to spark-cluster shared storage ***************************************
+cp /home/dalas/Documents/fuel-iot-scratch/iot-fuel-project/scala-postgres-test/target/scala-2.12/spark-streaming-data-pipeline-1.0.0-scala2.12.jar /home/dalas/Documents/fuel-iot-scratch/iot-fuel-project/apps/spark-streaming-data-pipeline-1.0.0-scala2.12.jar
+
+
+
+
+************** Populating postgres ***************************
+psql -h localhost -p 5432 -U docker # password:docker
+CREATE DATABASE demodb;
+\c demodb;
+
+CREATE TABLE IF NOT EXISTS people (
+    id SERIAL,
+    name VARCHAR(32) NOT NULL,
+    height FLOAT NOT NULL 
+);
+
+
+insert into people (name, height)  values ('Jhon', 1.85);
+insert into people (name, height)  values ('Cary', 1.91);
+
+
+
+
+*************** Final DDL Statements **************************
+psql -h localhost -p 5432 -U docker # password:docker
+
+CREATE USER demouser WITH PASSWORD 'demouser';
+ALTER USER demouser WITH SUPERUSER;
+CREATE DATABASE demodb;
+GRANT ALL PRIVILEGES ON DATABASE demodb TO demouser;
+\c demodb;
+
+CREATE TABLE IF NOT EXISTS dashboard_event_transacs_detail_agg_tbl (
+    id_usr INTEGER,
+    pump_site_id INTEGER,
+    prod_name TEXT,
+    total_gallons DOUBLE PRECISION
+);
+
+
+
+
+
+
+
+--- just and old example
+/opt/spark/bin/spark-submit --master spark://spark-master:7077 \
+--jars /opt/spark-apps/postgresql-42.2.22.jar \
+--driver-memory 1G \
+--executor-memory 1G \
+/opt/spark-apps/main.py
+
+
+
+************* Executing app in spark-master in client mode  *************************
+docker exec -it spark-master bash
+
+
+--- postgre test
+/opt/spark/bin/spark-submit --class com.dalas.postgreTest --deploy-mode client --master spark://spark-master:7077 \
+/opt/spark-apps/spark-streaming-data-pipeline-1.0.0-scala2.12.jar
+
+-- spark streaming test
+/opt/spark/bin/spark-submit --class com.dalas.sparkStreaming --deploy-mode client --master spark://spark-master:7077 \
+/opt/spark-apps/spark-streaming-data-pipeline-1.0.0-scala2.12.jar
+
+>> Name de spark scala app as: sparkStreamingDataPipeline
+
+
+"broker1:9092,broker2:9093,broker3:9094"
+"172.18.0.4:9092,broker2:9093,broker3:9094"
+
+
+***** Delete topic and then create it
+$KAFKA_HOME/bin/kafka-topics.sh --zookeeper 127.0.0.1:2181 --topic fuel-iot-avro-test --delete
+
+$KAFKA_HOME/bin/kafka-topics.sh --zookeeper 127.0.0.1:2181 --list
+
+$KAFKA_HOME/bin/kafka-topics.sh --create --bootstrap-server localhost:9094 --topic fuel-iot-avro-test --partitions 3 --replication-factor 3
+
+
+
+
+
+http://
+
+
+
+
+
